@@ -52,7 +52,7 @@ func waitForAssociation(ec2Svc *ec2.EC2, endpointID string) (err error) {
 	if err != nil {
 		return
 	}
-	if *describeOutput.ClientVpnEndpoints[0].Status.Code != ec2.ClientVpnEndpointStatusCodeAvailable {
+	if *describeOutput.ClientVpnEndpoints[0].Status.Code == ec2.ClientVpnEndpointStatusCodePendingAssociate {
 		time.Sleep(3e10) // Wait for 30s before polling again
 		err = waitForAssociation(ec2Svc, endpointID)
 	}
@@ -104,7 +104,8 @@ func handler(ctx context.Context, event cfn.Event) (physicalResourceID string, d
 		fallthrough
 	case "Create":
 		err = modifyVpn(ec2Svc, endpointID, vpcID, sgID, subnetID)
-		if err != nil {
+		if err == nil {
+			time.Sleep(1e1) // Wait 1s for modify request to propagate
 			err = waitForAssociation(ec2Svc, endpointID)
 		}
 	case "Delete":
