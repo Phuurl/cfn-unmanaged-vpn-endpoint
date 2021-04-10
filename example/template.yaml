@@ -1,0 +1,34 @@
+Description:  Example template using the VPN association custom resource
+
+Parameters:
+  VpnVpcUpdateFunc:
+    Description: Export name of VPN VPC association custom resource Lambda function
+    Type: String
+    Default: 'VpnVpcUpdateFunc'
+
+  ClientVpnEndpointId:
+    Description: Client VPN endpoint ID to associate with the VPN/subnets
+    Type: String
+
+  Vpc:
+    Description: VPC to attach the VPN endpoint to
+    Type: AWS::EC2::VPC::Id
+
+  SecurityGroup:
+    Description: Security group to attach to the VPN endpoint - must be in the same VPC
+    Type: AWS::EC2::SecurityGroup::Id
+
+  SubnetId:
+    Description: Subnet to attach to the VPN endpoint - must be in the same VPC
+    Type: AWS::EC2::Subnet::Id
+
+Resources:
+  VpnAssociation:
+    Type: Custom::VpnVpcAssociation
+    Properties:
+      ServiceToken:
+        Fn::ImportValue: !Ref VpnVpcUpdateFunc
+      EndpointId: !Ref ClientVpnEndpointId
+      VpcId: !Ref Vpc
+      SecurityGroupId: !Ref SecurityGroup
+      SubnetId: !Ref SubnetId

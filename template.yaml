@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  CloudFormation custom resource to update the target VPC of a Client VPN Endpoint not managed in CloudFormation
+
+Globals:
+  Function:
+    Timeout: 600
+
+Resources:
+  VpnVpcFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: source/
+      Handler: source
+      Runtime: go1.x
+      Policies:
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - ec2:ApplySecurityGroupsToClientVpnTargetNetwork
+                - ec2:AssociateClientVpnTargetNetwork
+                - ec2:DescribeClientVpnEndpoints
+                - ec2:DescribeClientVpnTargetNetworks
+                - ec2:DisassociateClientVpnTargetNetwork
+                - ec2:ModifyClientVpnEndpoint
+              Resource: '*'
+
+Outputs:
+  VpnVpcFunction:
+    Description: "Lambda ARN"
+    Value: !GetAtt VpnVpcFunction.Arn
+    Export:
+      Name: VpnVpcUpdateFunc
